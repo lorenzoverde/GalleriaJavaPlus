@@ -50,15 +50,18 @@ public class ControlloAccesso {
         if(permesso!=null)
             utenteLoggato=username;
         return permesso;
-//        // Inizio stub
-//        utenteLoggato = username;
-//        if(username.equals("Lorenzo"))
-//            permesso=Permesso.OPERATORE;
-//        else
-//            permesso=Permesso.CONTROLLORE;
-//        
-//        return permesso; // Da modificare
-//        // Fine stub
+    }
+    
+    /**
+     * Effettua un controllo sulle credenziali fornite, senza di fatto tentare di loggare l'utente.
+     * @param username Utente da loggare
+     * @param password Password inserita
+     * @return L'istanza di un <code>Permesso</code> se l'autenticazione ha avuto successo,
+     *         <code>null</code> altrimenti
+     */
+    public Permesso controllaLogin(String username, String password) {        
+        permesso=DDI.getInstance().readUtente(username, password);
+        return permesso;
     }
     
     public void effettuaLogout() {

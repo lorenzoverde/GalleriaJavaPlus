@@ -17,10 +17,22 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+import com.sun.net.httpserver.HttpServer;
+ 
+import java.net.URI;
+ 
+import javax.ws.rs.core.UriBuilder;
+ 
+import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
+import org.glassfish.jersey.server.ResourceConfig;
+
 /**
  * Entry point dell'applicazione.
  */
 public class Main extends Application {
+    
+    private final static int port = 9998;
+    private final static String host="http://localhost/";
     
     public static final ClassToInstanceMap GUIcontrollers = MutableClassToInstanceMap.create();
     public static Stage stage;
@@ -67,6 +79,13 @@ public class Main extends Application {
         th.start();
 
         System.out.println("Fine!"); 
+        
+        System.out.print("Inizializzazione API webservice... ");
+        URI baseUri = UriBuilder.fromUri(host).port(port).build();
+        ResourceConfig config = new ResourceConfig(API.TunnelStatus.class, API.SecurityFilter.class);
+        HttpServer server = JdkHttpServerFactory.createHttpServer(baseUri, config);
+        System.out.println("Fine!"); 
+    
         launch(args);
     }
     
