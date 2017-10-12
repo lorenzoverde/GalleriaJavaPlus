@@ -9,11 +9,13 @@ import APP.controlloAccesso.ControlloAccesso;
 import APP.controlloAccesso.Permesso;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 
 /**
@@ -25,6 +27,7 @@ public class SecurityFilter implements ContainerRequestFilter {
 
     private static String SECURED_URL_PREFIX = "secured";
     private static String AUTHORIZATION_HEADER_KEY = "Authorization";
+    private static String AUTHORIZATION_LEVEL_PROPERTY_KEY = "AuthorizationLevel";
     
     @Override
     public void filter(ContainerRequestContext crc) throws IOException {
@@ -41,9 +44,31 @@ public class SecurityFilter implements ContainerRequestFilter {
 
             if(perm == null)
                 resp = Response.status(Response.Status.UNAUTHORIZED).build();
+            else{
+                final PermessoWeb permessoWeb = new PermessoWeb();
+                permessoWeb.permit = perm;
+                crc.setSecurityContext( new SecurityContext() {
+                    @Override
+                    public boolean isUserInRole(String role) {
+                        return role.equals(permessoWeb.getName());
+                    }
+                    @Override
+                    public boolean isSecure() {
+                        return false; // check HTTPS
+                    }
+                    @Override
+                    public String getAuthenticationScheme() {
+                        return null; // ...
+                    }
+                    @Override
+                    public Principal getUserPrincipal() {
+                        return permessoWeb;
+                    }
+                });
+                
+            }
         }
         if(resp != null)
             crc.abortWith(resp);
     }
-    
 }
