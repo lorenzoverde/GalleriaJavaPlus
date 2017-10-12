@@ -9,6 +9,7 @@ import APP.controlloIlluminazione.ControlloIlluminazione;
 import APP.controlloPAI.ControlloPAI;
 import APP.controlloTraffico.ControlloTraffico;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -57,9 +58,7 @@ public class TunnelStatus {
     public String getStatus(@Context ContainerRequestContext crc) {
         JsonObjectBuilder json = Json.createObjectBuilder();
         
-        List<String> desired_infos = crc.getHeaders().get(DESIRED_INFORMATIONS_HEADER_KEY);
-        
-        //System.out.println("Richieste remote: "+desired_infos.toString());
+        List<String> desired_infos = Arrays.asList(crc.getHeaderString(DESIRED_INFORMATIONS_HEADER_KEY).split(", "));
                 
         if(desired_infos.contains(DESIRED_INFORMATIONS_HEADER_VALUE_ALL)){
             retrieveEveryStatus(json);
