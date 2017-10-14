@@ -31,7 +31,7 @@ import main.Main;
 /**
  * Gestore principale della GUI che si occupa della vista principale e della finestra di login.
  */
-public class MainController implements Initializable {
+public class MainController implements Initializable, ExternalActionOnModelListener {
     //Costanti
     public static final int LOGIN_W=320, LOGIN_H=320, APP_W=800, APP_H=600, MANT_W=525, MANT_H=480;
     
@@ -77,12 +77,14 @@ public class MainController implements Initializable {
     private UpdateThread aggiornaInterfaccia;
     protected boolean modifichePendenti;
     private boolean avviata;
+    protected boolean externalActionRegistered;
     
     public MainController(){
         myRbuttons=new MyRadioButtonsWrapper();
         permesso=null;
         aggiornaInterfaccia=null;
         modifichePendenti=false;
+        externalActionRegistered = false;
         avviata=false;
     }
 
@@ -114,6 +116,8 @@ public class MainController implements Initializable {
         } catch (IOException ex) {
             Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
+        ExternalActionOnModelEvent.subscribe(this);
     }
     
     /**
@@ -298,6 +302,11 @@ public class MainController implements Initializable {
                 break;
         }       
     }
+
+    @Override
+    public void externalActionRegistered() {
+        externalActionRegistered = true;
+    }
     
     /**************************************************************************/
     //Strumenti ausiliari
@@ -319,6 +328,11 @@ public class MainController implements Initializable {
         @Override
         public void run() {
             Runnable operation=()->{recuperaValoriInUso();};
+            Runnable operation2=()->{
+                recuperaValoriInUso();    
+                disabilitaPulsantiModifiche(true);
+                externalActionRegistered = false;
+            };
             if(high_perf){
                 long lastTime=System.nanoTime(), now;
                 double nsOp1=1000000000/freq;                                     //16666666.6667 ns sono 16ms, l'intervallo di tempo che deve esserci tra un update e l'altro per per averne 60 al secondo
@@ -339,7 +353,9 @@ public class MainController implements Initializable {
                     }
                     if(deltaOp2>=1){
                         if(((PAIController)Main.GUIcontrollers.getInstance(PAIController.class)).isPaiInCorsoIncoherent())
-                                Platform.runLater(operation);
+                            Platform.runLater(operation);
+                        if(externalActionRegistered)
+                            Platform.runLater(operation2);   
                         deltaOp2--;
                     }
                 }
@@ -352,6 +368,8 @@ public class MainController implements Initializable {
                             disabilitaPulsantiModifiche(false);
                         if(((PAIController)Main.GUIcontrollers.getInstance(PAIController.class)).isPaiInCorsoIncoherent())
                             Platform.runLater(operation);
+                        if(externalActionRegistered)
+                            Platform.runLater(operation2);                           
                         Thread.sleep(time);
                     } catch (InterruptedException ex) {
                         Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);

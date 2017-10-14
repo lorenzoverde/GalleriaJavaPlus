@@ -10,6 +10,7 @@ import APP.controlloAccesso.Permesso;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.annotation.Priority;
@@ -36,9 +37,14 @@ public class SecurityFilter implements ContainerRequestFilter {
         if(!crc.getUriInfo().getPath().contains(SECURED_URL_PREFIX))
             return;
         Response resp = null;
-        List<String> auth = crc.getHeaders().get(AUTHORIZATION_HEADER_KEY);
-        if(auth==null || auth.size()<=0){
-            resp = Response.status(Response.Status.UNAUTHORIZED).build();
+        String headers = crc.getHeaderString(AUTHORIZATION_HEADER_KEY);
+        if(headers==null){
+            crc.abortWith(Response.status(Response.Status.BAD_REQUEST).build());
+            return;
+        }
+        List<String> auth = Arrays.asList(headers.split(", "));
+        if(auth==null || auth.size()!=1){
+            resp = Response.status(Response.Status.BAD_REQUEST).build();
         } else {
             StringTokenizer st = new StringTokenizer(auth.get(0), ":");
             String username = st.nextToken(), password = st.nextToken();        

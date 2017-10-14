@@ -9,7 +9,9 @@ import APP.controlloAccesso.Permesso;
 import APP.controlloIlluminazione.ControlloIlluminazione;
 import APP.controlloIlluminazione.Criterio;
 import APP.controlloPAI.ControlloPAI;
+import APP.controlloTraffico.Circolazione;
 import APP.controlloTraffico.ControlloTraffico;
+import GUI.ExternalActionOnModelEvent;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -38,42 +40,40 @@ import javax.ws.rs.core.SecurityContext;
 @Path("api/secured/status")
 public class TunnelStatus {
         
-    private final static String DESIRED_INFORMATIONS_HEADER_KEY = "DesiredInfo";
-    private final static String DESIRED_INFORMATIONS_HEADER_VALUE_ALL = "all";
-    private final static String DESIRED_INFORMATIONS_HEADER_VALUE_TRAFFIC = "traffic";
-    private final static String DESIRED_INFORMATIONS_HEADER_VALUE_LIGHTING = "lighting";
-    private final static String DESIRED_INFORMATIONS_HEADER_VALUE_PAI = "pai";
+    private final static String HEADER_ONLY_KEY__DESIRED_INFORMATIONS = "DesiredInfo";
+    private final static String HEADER_ONLY_VALUE__DESIRED_INFORMATIONS_ALL = "all";
+    private final static String VALUE__DESIRED_INFORMATIONS_TRAFFIC = "traffic";
+    private final static String VALUE__DESIRED_INFORMATIONS_LIGHTING = "lighting";
+    private final static String VALUE__DESIRED_INFORMATIONS_PAI = "pai";
       
     @GET
     @Produces("application/json")
     public String getStatus(@Context ContainerRequestContext crc) {
         JsonObjectBuilder json = Json.createObjectBuilder();
         
-        String headers = crc.getHeaderString(DESIRED_INFORMATIONS_HEADER_KEY);
+        String headers = crc.getHeaderString(HEADER_ONLY_KEY__DESIRED_INFORMATIONS);
         if(headers == null || headers == ""){
-            crc.abortWith(Response.status(Response.Status.BAD_REQUEST).build());
             return null;
         }
         
         List<String> desired_infos = Arrays.asList(headers.split(", "));
                 
-        if(desired_infos.contains(DESIRED_INFORMATIONS_HEADER_VALUE_ALL)){
+        if(desired_infos.contains(HEADER_ONLY_VALUE__DESIRED_INFORMATIONS_ALL)){
             retrieveEveryStatus(json);
         }
         else{
-            if(desired_infos.contains(DESIRED_INFORMATIONS_HEADER_VALUE_LIGHTING)){
+            if(desired_infos.contains(VALUE__DESIRED_INFORMATIONS_LIGHTING)){
                 retrieveLightingStatus(json);
             }
-            if(desired_infos.contains(DESIRED_INFORMATIONS_HEADER_VALUE_TRAFFIC)){
+            if(desired_infos.contains(VALUE__DESIRED_INFORMATIONS_TRAFFIC)){
                 retrieveTrafficStatus(json);
             }
-            if(desired_infos.contains(DESIRED_INFORMATIONS_HEADER_VALUE_PAI)){
+            if(desired_infos.contains(VALUE__DESIRED_INFORMATIONS_PAI)){
                 retrievePaiStatus(json);
             }
         }
         JsonObject builtJson = json.build();
         if(builtJson.isEmpty()){
-            crc.abortWith(Response.status(Response.Status.BAD_REQUEST).build());
             return null;
         }
         String result = builtJson.toString();
@@ -81,17 +81,72 @@ public class TunnelStatus {
     }
     
     @POST
-    @Path("update/lighting/currentCriterion")
+    @Path("update/"+ VALUE__DESIRED_INFORMATIONS_LIGHTING +"/"+ KEY__LIGHTING__CURRENT_CRITERION)
     @SetStatusFilterAnnotation
     public void setLightingCriterion(@Context ContainerRequestContext crc){
-        System.out.println("TODO: "+"aggiorna criterio illuminazione con "+crc.getProperty(SetStatusFilter.VALUE_HEADER_KEY));
-        String criterio = (String)crc.getProperty(SetStatusFilter.VALUE_HEADER_KEY);
+        String criterio = (String)crc.getProperty(SetStatusFilter.KEY__VALUE_TO_SET);
         ControlloIlluminazione.getInstance().provideCriterio(Criterio.valueOf(criterio));
+        new ExternalActionOnModelEvent(this).fire();
     }
     
-    private final static String LEDS_VALUES_JSON_KEY = "ledsValues";
-    public final static String CURRENT_CRITERION_JSON_KEY = "currentCriterion";
-    public final static String CONSTANT_CRITERION_VALUE_JSON_KEY = "constantCriterionValue";
+    @POST
+    @Path("update/"+ VALUE__DESIRED_INFORMATIONS_LIGHTING +"/"+ KEY__LIGHTING__CONSTANT_CRITERION_VALUE)
+    @SetStatusFilterAnnotation
+    public void setLightingConstantCriterionValue(@Context ContainerRequestContext crc){
+        int value = Integer.parseInt((String)crc.getProperty(SetStatusFilter.KEY__VALUE_TO_SET));
+        ControlloIlluminazione.getInstance().setIntensitaCriterioCostante(value);
+        new ExternalActionOnModelEvent(this).fire();
+    }
+    
+    @POST
+    @Path("update/"+ VALUE__DESIRED_INFORMATIONS_TRAFFIC +"/"+ KEY__TRAFFIC__CURRENT_CIRCULATION)
+    @SetStatusFilterAnnotation
+    public void setTrafficCirculation(@Context ContainerRequestContext crc){
+        String circolazione = (String)crc.getProperty(SetStatusFilter.KEY__VALUE_TO_SET);   
+        ControlloTraffico.getInstance().setCircolazione(Circolazione.valueOf(circolazione));
+        new ExternalActionOnModelEvent(this).fire();
+    }
+    
+    @POST
+    @Path("update/"+ VALUE__DESIRED_INFORMATIONS_TRAFFIC +"/"+ KEY__TRAFFIC__LEFT_GREEN_DURATION)
+    @SetStatusFilterAnnotation
+    public void setTrafficLeftGreenDuration(@Context ContainerRequestContext crc){
+        int value = Integer.parseInt((String)crc.getProperty(SetStatusFilter.KEY__VALUE_TO_SET));
+        ControlloTraffico.getInstance().setDurataVerdeSXRossoDX(value);
+        new ExternalActionOnModelEvent(this).fire();
+    }
+        
+    @POST
+    @Path("update/"+ VALUE__DESIRED_INFORMATIONS_TRAFFIC +"/"+ KEY__TRAFFIC__RIGHT_GREEN_DURATION)
+    @SetStatusFilterAnnotation
+    public void setTrafficRightGreenDuration(@Context ContainerRequestContext crc){
+        int value = Integer.parseInt((String)crc.getProperty(SetStatusFilter.KEY__VALUE_TO_SET));
+        ControlloTraffico.getInstance().setDurataVerdeDXRossoSX(value);
+        new ExternalActionOnModelEvent(this).fire();
+    }
+    
+    @POST
+    @Path("update/"+ VALUE__DESIRED_INFORMATIONS_TRAFFIC +"/"+ KEY__TRAFFIC__ADDITIONAL_RED_DURATION)
+    @SetStatusFilterAnnotation
+    public void setTrafficAdditionalRedDuration(@Context ContainerRequestContext crc){
+        int value = Integer.parseInt((String)crc.getProperty(SetStatusFilter.KEY__VALUE_TO_SET));
+        ControlloTraffico.getInstance().setDurataRossoAggiuntiva(value);
+        new ExternalActionOnModelEvent(this).fire();
+    }
+    
+    @POST
+    @Path("update/"+ VALUE__DESIRED_INFORMATIONS_PAI +"/"+ KEY__PAI__IS_ACTIVE)
+    @SetStatusFilterAnnotation
+    public void setPaiIsActive(@Context ContainerRequestContext crc){
+        boolean value = Boolean.parseBoolean((String)crc.getProperty(SetStatusFilter.KEY__VALUE_TO_SET));
+        if(!value)
+            ControlloPAI.getInstance().disattivaPAI();
+        new ExternalActionOnModelEvent(this).fire();
+    }
+    
+    private final static String KEY__LIGHTING__LEDS_VALUES = "ledsValues";
+    public final static String KEY__LIGHTING__CURRENT_CRITERION = "currentCriterion";
+    public final static String KEY__LIGHTING__CONSTANT_CRITERION_VALUE = "constantCriterionValue";
     
     private static void retrieveLightingStatus(JsonObjectBuilder outerJson){
         JsonObjectBuilder json = Json.createObjectBuilder();
@@ -103,63 +158,49 @@ public class TunnelStatus {
         for(int i =0; i<leds.length; i++)
             jsonLedsArray.add(leds[i]);
         
-        json.add(LEDS_VALUES_JSON_KEY, jsonLedsArray);
-        json.add(CONSTANT_CRITERION_VALUE_JSON_KEY, controller.getIntensitaCriterioCostante());
-        json.add(CURRENT_CRITERION_JSON_KEY, controller.obtainCriterio().toString());
+        json.add(KEY__LIGHTING__LEDS_VALUES, jsonLedsArray);
+        json.add(KEY__LIGHTING__CONSTANT_CRITERION_VALUE, controller.getIntensitaCriterioCostante());
+        json.add(KEY__LIGHTING__CURRENT_CRITERION, controller.obtainCriterio().toString());
         
-        outerJson.add(DESIRED_INFORMATIONS_HEADER_VALUE_LIGHTING, json);
-    }
-    private static void updateLightingStatus(JsonObject json){
-        try{
-            json.getString(CONSTANT_CRITERION_VALUE_JSON_KEY);        
-        } catch(NullPointerException e){}
+        outerJson.add(VALUE__DESIRED_INFORMATIONS_LIGHTING, json);
     }
     
-    private final static String IS_LEFT_TRAFFIC_LIGHT_GREEN_JSON_KEY = "isLeftTrafficLightGreen";
-    private final static String IS_RIGHT_TRAFFIC_LIGHT_GREEN_JSON_KEY = "isRightTrafficLightGreen";
-    public final static String CURRENT_CIRCULATION_JSON_KEY = "currentCirculation";
-    public final static String LEFT_TRAFFIC_LIGHT_GREEN_DURATION_JSON_KEY = "leftTrafficLightGreenDuration";
-    public final static String RIGHT_TRAFFIC_LIGHT_GREEN_DURATION_JSON_KEY = "rightTrafficLightGreenDuration";
-    public final static String ADDITIONAL_RED_DURATION_JSON_KEY = "additionalRedDuration";
+    private final static String KEY__TRAFFIC__IS_LEFT_GREEN = "isLeftTrafficLightGreen";
+    private final static String KEY__TRAFFIC__IS_RIGHT_GREEN = "isRightTrafficLightGreen";
+    public final static String KEY__TRAFFIC__CURRENT_CIRCULATION = "currentCirculation";
+    public final static String KEY__TRAFFIC__LEFT_GREEN_DURATION = "leftGreenDuration";
+    public final static String KEY__TRAFFIC__RIGHT_GREEN_DURATION = "rightGreenDuration";
+    public final static String KEY__TRAFFIC__ADDITIONAL_RED_DURATION = "additionalRedDuration";
     
     private static void retrieveTrafficStatus(JsonObjectBuilder outerJson){
         JsonObjectBuilder json = Json.createObjectBuilder();
         
         ControlloTraffico controller = ControlloTraffico.getInstance();
         
-        json.add(IS_LEFT_TRAFFIC_LIGHT_GREEN_JSON_KEY, controller.isSmf1Verde());
-        json.add(IS_RIGHT_TRAFFIC_LIGHT_GREEN_JSON_KEY, controller.isSmf2Verde());
-        json.add(CURRENT_CIRCULATION_JSON_KEY, controller.getCircolazione().toString());
-        json.add(LEFT_TRAFFIC_LIGHT_GREEN_DURATION_JSON_KEY, controller.getDurataVerdeSXRossoDX());
-        json.add(RIGHT_TRAFFIC_LIGHT_GREEN_DURATION_JSON_KEY, controller.getDurataVerdeDXRossoSX());
-        json.add(ADDITIONAL_RED_DURATION_JSON_KEY, controller.getDurataRossoAggiuntiva());
+        json.add(KEY__TRAFFIC__IS_LEFT_GREEN, controller.isSmf1Verde());
+        json.add(KEY__TRAFFIC__IS_RIGHT_GREEN, controller.isSmf2Verde());
+        json.add(KEY__TRAFFIC__CURRENT_CIRCULATION, controller.getCircolazione().toString());
+        json.add(KEY__TRAFFIC__LEFT_GREEN_DURATION, controller.getDurataVerdeSXRossoDX());
+        json.add(KEY__TRAFFIC__RIGHT_GREEN_DURATION, controller.getDurataVerdeDXRossoSX());
+        json.add(KEY__TRAFFIC__ADDITIONAL_RED_DURATION, controller.getDurataRossoAggiuntiva());
         
-        outerJson.add(DESIRED_INFORMATIONS_HEADER_VALUE_TRAFFIC, json);
-    }
-    private static void updateTrafficStatus(JsonObject json){
-        
-    
+        outerJson.add(VALUE__DESIRED_INFORMATIONS_TRAFFIC, json);
     }
     
-    public final static String IS_PAI_ACTIVE = "isPaiActive";
-    private final static String IS_TEMPERATURE_HIGH = "isTemperatureHigh";
+    public final static String KEY__PAI__IS_ACTIVE = "isActive";
+    private final static String KEY__PAI__IS_TEMPERATURE_HIGH = "isTemperatureHigh";
     
     private static void retrievePaiStatus(JsonObjectBuilder outerJson){
         JsonObjectBuilder json = Json.createObjectBuilder();
         
         ControlloPAI controller = ControlloPAI.getInstance();
         
-        json.add(IS_PAI_ACTIVE, controller.isPAIAttiva());
-        json.add(IS_TEMPERATURE_HIGH, controller.isTemperaturaAlta());
+        json.add(KEY__PAI__IS_ACTIVE, controller.isPAIAttiva());
+        json.add(KEY__PAI__IS_TEMPERATURE_HIGH, controller.isTemperaturaAlta());
         
-        outerJson.add(DESIRED_INFORMATIONS_HEADER_VALUE_PAI, json);
+        outerJson.add(VALUE__DESIRED_INFORMATIONS_PAI, json);
     }
-    private static void updatePaiStatus(JsonObject json){
-        
-    
-    }
-
-    
+  
     private static void retrieveEveryStatus(JsonObjectBuilder json){
         retrieveLightingStatus(json);
         retrieveTrafficStatus(json);
