@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 import java.util.StringTokenizer;
+import javax.annotation.Priority;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Response;
@@ -22,6 +23,7 @@ import javax.ws.rs.ext.Provider;
  *
  * @author Lorenzo
  */
+@Priority(1)
 @Provider
 public class SecurityFilter implements ContainerRequestFilter {
 
@@ -65,7 +67,7 @@ public class SecurityFilter implements ContainerRequestFilter {
                         return permessoWeb;
                     }
                 });
-                
+                crc.setProperty("Authentication_Level", perm);
             }
         }
         if(resp != null)

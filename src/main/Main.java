@@ -82,7 +82,7 @@ public class Main extends Application {
         
         System.out.print("Inizializzazione API webservice... ");
         URI baseUri = UriBuilder.fromUri(host).port(port).build();
-        ResourceConfig config = new ResourceConfig(API.TunnelStatus.class, API.SecurityFilter.class);
+        ResourceConfig config = new ResourceConfig(API.TunnelStatus.class, API.UserLogin.class, API.SecurityFilter.class, API.SetStatusFilter.class);
         HttpServer server = JdkHttpServerFactory.createHttpServer(baseUri, config);
         System.out.println("Fine!"); 
     
