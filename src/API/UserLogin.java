@@ -10,13 +10,10 @@ import javax.json.JsonObject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.SecurityContext;
 
-/**
- *
- * @author Lorenzo
- */
+
 @Path("api/secured/login")
 public class UserLogin {
     
@@ -24,8 +21,9 @@ public class UserLogin {
     
     @GET
     @Produces("application/json")
-    public String loginCheck(@Context SecurityContext securityContext) {
-        PermessoWeb permesso = (PermessoWeb)securityContext.getUserPrincipal();
+    public String loginCheck(@Context ContainerRequestContext crc) {
+        // Verifica ed invia livello di autenticazione
+        PermessoWeb permesso = (PermessoWeb)crc.getSecurityContext().getUserPrincipal();
         JsonObject json = Json.createObjectBuilder()
         .add(AUTHENTICATION_LEVEL_JSON_KEY, permesso.getAuthenticationLevel()).build();
         String result = json.toString();

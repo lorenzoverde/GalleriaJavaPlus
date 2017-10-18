@@ -289,4 +289,80 @@ public class DDI {
         }
        return true;
     }
+    
+    public boolean writeNewNotificationToken(String token) {
+        try {
+            Connection con = getConnection();
+            Statement stmt = con.createStatement();
+            try {
+                stmt.executeUpdate("insert into notification_tokens (token) value ('"+token+"')");
+                con.commit();
+            } finally {
+
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (con != null) {
+                    RilasciaConnessione(con);
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DDI.class.getName()).log(Level.SEVERE, "Si è verificato un problema con l'accesso al db", ex);
+            return false;
+        }      
+        return true;
+    }
+    
+    public boolean deleteNotificationToken(String token) {
+        try {
+            Connection con = getConnection();
+            Statement stmt = con.createStatement();
+            try {
+                stmt.executeUpdate("delete from notification_tokens where token='"+token+"'");
+                con.commit();
+            } finally {
+
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (con != null) {
+                    RilasciaConnessione(con);
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DDI.class.getName()).log(Level.SEVERE, "Si è verificato un problema con l'accesso al db", ex);
+            return false;
+        }      
+        return true;
+    }
+    
+    public List<String> readEveryNotificationToken() {
+        try {
+            Connection con = getConnection();
+            Statement stmt = con.createStatement();
+            try {
+                ResultSet rs = stmt.executeQuery("select token from notification_tokens");
+
+                List<String> tokensList = new ArrayList();
+                while(rs.next() != false){
+                    tokensList.add(rs.getString(1));
+                }
+                
+                con.commit();
+                return tokensList;
+                
+            } finally {
+
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (con != null) {
+                    RilasciaConnessione(con);
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DDI.class.getName()).log(Level.SEVERE, "Si è verificato un problema con l'accesso al db", ex);
+        }
+        return null;
+    }
 }

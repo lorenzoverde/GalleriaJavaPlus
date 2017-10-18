@@ -37,16 +37,11 @@ public class SecurityFilter implements ContainerRequestFilter {
         if(!crc.getUriInfo().getPath().contains(SECURED_URL_PREFIX))
             return;
         Response resp = null;
-        String headers = crc.getHeaderString(AUTHORIZATION_HEADER_KEY);
-        if(headers==null){
-            crc.abortWith(Response.status(Response.Status.BAD_REQUEST).build());
-            return;
-        }
-        List<String> auth = Arrays.asList(headers.split(", "));
-        if(auth==null || auth.size()!=1){
+        String auth = getAuthenticationFromHeaders(crc);
+        if(auth == null || auth.equals(""))
             resp = Response.status(Response.Status.BAD_REQUEST).build();
-        } else {
-            StringTokenizer st = new StringTokenizer(auth.get(0), ":");
+        else {
+            StringTokenizer st = new StringTokenizer(auth, ":");
             String username = st.nextToken(), password = st.nextToken();        
             Permesso perm = ControlloAccesso.getInstance().controllaLogin(username, password);
 
@@ -78,5 +73,15 @@ public class SecurityFilter implements ContainerRequestFilter {
         }
         if(resp != null)
             crc.abortWith(resp);
+    }
+    
+    private String getAuthenticationFromHeaders(ContainerRequestContext crc){
+        String headers = crc.getHeaderString(AUTHORIZATION_HEADER_KEY);
+        if(headers==null)
+            return null;
+        List<String> auth = Arrays.asList(headers.split(", "));
+        if(auth == null || auth.size()!=1)
+            return null;
+        return auth.get(0);
     }
 }
