@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 import javax.annotation.Priority;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -41,8 +42,24 @@ public class SecurityFilter implements ContainerRequestFilter {
         if(auth == null || auth.equals(""))
             resp = Response.status(Response.Status.BAD_REQUEST).build();
         else {
-            StringTokenizer st = new StringTokenizer(auth, ":");
-            String username = st.nextToken(), password = st.nextToken();        
+            String username = null, password = null;
+            StringTokenizer st;
+            try{
+                st = new StringTokenizer(auth, ":");            
+                username = st.nextToken();
+                password = st.nextToken();
+            }catch(NoSuchElementException | NullPointerException e){
+                resp = Response.status(Response.Status.BAD_REQUEST).build();
+                crc.abortWith(resp);
+                return;
+            }finally{
+                if(username == null || username.equals("") || password==null || password.equals("")){
+                    resp = Response.status(Response.Status.BAD_REQUEST).build();
+                    crc.abortWith(resp);
+                    return;
+                }
+            }    
+            
             Permesso perm = ControlloAccesso.getInstance().controllaLogin(username, password);
 
             if(perm == null)

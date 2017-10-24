@@ -59,9 +59,8 @@ public class ControlloAccesso {
      * @return L'istanza di un <code>Permesso</code> se l'autenticazione ha avuto successo,
      *         <code>null</code> altrimenti
      */
-    public Permesso controllaLogin(String username, String password) {        
-        permesso=DDI.getInstance().readUtente(username, password);
-        return permesso;
+    public Permesso controllaLogin(String username, String password) {  
+        return DDI.getInstance().readUtente(username, password);
     }
     
     public void effettuaLogout() {
