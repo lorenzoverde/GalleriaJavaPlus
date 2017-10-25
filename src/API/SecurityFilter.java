@@ -67,6 +67,8 @@ public class SecurityFilter implements ContainerRequestFilter {
             else{
                 final PermessoWeb permessoWeb = new PermessoWeb();
                 permessoWeb.permit = perm;
+                permessoWeb.username = username;
+                permessoWeb.password = password;
                 crc.setSecurityContext( new SecurityContext() {
                     @Override
                     public boolean isUserInRole(String role) {

@@ -1,13 +1,13 @@
 package DDI;
 
 import APP.controlloAccesso.Permesso;
-import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -308,7 +308,7 @@ public class DDI {
                 }
             }
         } catch (SQLException ex) {
-            if(ex instanceof MySQLIntegrityConstraintViolationException)
+            if(ex instanceof SQLIntegrityConstraintViolationException)
                 System.out.println("Annullata la richiesta di registrazione di un token poiché già presente nel DB");
             else
                 Logger.getLogger(DDI.class.getName()).log(Level.SEVERE, "Si è verificato un problema con l'accesso al db", ex);

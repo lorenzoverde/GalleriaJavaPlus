@@ -138,9 +138,10 @@ public class TunnelStatus {
     @Path("update/"+ VALUE__DESIRED_INFORMATIONS_PAI +"/"+ KEY__PAI__IS_ACTIVE)
     @SetStatusFilterAnnotation
     public void setPaiIsActive(@Context ContainerRequestContext crc){
+        PermessoWeb permesso = (PermessoWeb)crc.getSecurityContext().getUserPrincipal();
         boolean value = Boolean.parseBoolean((String)crc.getProperty(SetStatusFilter.KEY__VALUE_TO_SET));
         if(!value)
-            ControlloPAI.getInstance().disattivaPAI();
+            ControlloPAI.getInstance().disattivaPAI(permesso.username);
         new ExternalActionOnModelEvent(this).fire();
     }
     

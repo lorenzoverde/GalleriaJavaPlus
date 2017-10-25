@@ -150,6 +150,23 @@ public final class ControlloPAI {
         return false;
     }
 
+    /**
+     * Disattiva la procedura antincendio specificando l'utente coinvolto, senza reperirlo dal ControlloAccesso.
+     * Ripristina il funzionamento ordinario della galleria, registrando la disattivazione della PAI nel database.
+     * Lo scenario di utilizzo è stato pensato in caso di disattivazione da un utente remoto.
+     * @return <code>true</code> se è stato possibile disattivare la PAI.
+     */
+    public boolean disattivaPAI(String username) {
+        if (PAIAttiva && !temperaturaAlta) {
+            PAIAttiva = false;
+
+            DDI.getInstance().writeDisattivazionePAI(username);
+            
+            return true;
+        }
+        return false;
+    }
+    
     public boolean isPAIAttiva() {
         return PAIAttiva;
     }

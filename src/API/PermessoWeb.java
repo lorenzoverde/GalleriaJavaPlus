@@ -15,6 +15,8 @@ import java.security.Principal;
 public class PermessoWeb implements Principal {
 
     public Permesso permit;
+    public String username;
+    public String password;
     
     @Override
     public String getName() {
