@@ -7,6 +7,7 @@ package API;
 
 import APP.controlloAccesso.Permesso;
 import APP.controlloIlluminazione.Criterio;
+import APP.controlloPAI.ControlloPAI;
 import APP.controlloTraffico.Circolazione;
 import java.io.IOException;
 import java.util.List;
@@ -40,6 +41,10 @@ public class SetStatusFilter implements ContainerRequestFilter {
           
         
         try{
+            if(!crc.getUriInfo().getPath().contains("update/pai") && ControlloPAI.getInstance().isPAIAttiva()){
+                crc.abortWith(Response.status(Response.Status.FORBIDDEN).build());
+                return;
+            }
             if(crc.getUriInfo().getPath().contains("update/lighting")){
                 // Controlli constraints Illuminazione
                 if(crc.getUriInfo().getPath().contains(TunnelStatus.KEY__LIGHTING__CURRENT_CRITERION)){

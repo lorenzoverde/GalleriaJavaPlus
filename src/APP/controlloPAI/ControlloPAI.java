@@ -1,5 +1,6 @@
 package APP.controlloPAI;
 
+import API.NotificationSender;
 import APP.controlloAccesso.ControlloAccesso;
 import APP.controlloIlluminazione.ControlloIlluminazione;
 import APP.controlloTraffico.Circolazione;
@@ -125,6 +126,7 @@ public final class ControlloPAI {
             ControlloTraffico.getInstance().setCircolazione(Circolazione.INTERDETTA);
             
             DDI.getInstance().writeAttivazionePAI();
+            new NotificationSender().start();
             
             return true;
         }

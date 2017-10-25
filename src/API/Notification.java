@@ -23,8 +23,8 @@ import javax.ws.rs.core.Context;
  */
 @Path("api/secured/notification")
 public class Notification {
-    private final static String HEADER_ONLY_KEY___NOTIFICATION_TOKEN = "NotificationToken";
-
+    private final static String HEADER_ONLY_KEY___NOTIFICATION_TOKEN = "NotificationToken";   
+    
     @POST
     @Path("subscribe")
     public void subscribe(@Context ContainerRequestContext crc) {
@@ -54,4 +54,5 @@ public class Notification {
             return null;
         return tokens.get(0);
     }
+    
 }
