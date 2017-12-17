@@ -35,6 +35,11 @@ public class SecurityFilter implements ContainerRequestFilter {
     
     @Override
     public void filter(ContainerRequestContext crc) throws IOException {
+        //System.out.println("Request :"+crc.getMethod());
+        if(crc.getMethod().equals("OPTIONS")){
+            //crc.abortWith(Response.status(Response.Status.OK).build());
+            return;
+        }
         if(!crc.getUriInfo().getPath().contains(SECURED_URL_PREFIX))
             return;
         Response resp = null;
