@@ -33,6 +33,7 @@ public class MyResponseFilter implements ContainerResponseFilter {
         customHeaders.add("Authorization");
         customHeaders.add("DesiredInfo");
         customHeaders.add("Value");
+        customHeaders.add("NotificationToken");
         cresp.getHeaders().put("Access-Control-Allow-Headers", customHeaders);
     }
 
